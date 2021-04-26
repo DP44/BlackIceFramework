@@ -21,7 +21,7 @@ Responsible for working with the player's inventory.
 
 ---
 #### [Item](Item.md)
-Description.
+A class representing items such as weapons, icebreakers, and others.
 
 ---
 #### [LinkController](LinkController.md)
