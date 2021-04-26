@@ -1,6 +1,6 @@
 ﻿# Black Ice Framework
 ---
-A simple modding framework for the game Black Ice.
+A base for creating mods for the game [Black Ice](http://superdupergc.com/).
 
 #### Documentation
 ---
