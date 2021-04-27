@@ -69,11 +69,16 @@
     <Reference Include="UnityEngine.UIModule">
       <HintPath>libs\UnityEngine.UIModule.dll</HintPath>
     </Reference>
-    <Reference Include="Vectrocity">
-      <HintPath>libs\Vectrocity.dll</HintPath>
+    <Reference Include="Vectrosity">
+      <HintPath>libs\Vectrosity.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Hooks\EnemyAIHook.cs" />
+    <Compile Include="Hooks\GameStateMachineHook.cs" />
+    <Compile Include="Hooks\GizmosHook.cs" />
+    <Compile Include="Hooks\InventoryControlHook.cs" />
+    <Compile Include="FrameworkLogger.cs" />
     <Compile Include="ClassTracker.cs" />
     <Compile Include="Debugging.cs" />
     <Compile Include="Main.cs" />
