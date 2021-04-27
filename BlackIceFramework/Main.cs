@@ -5,15 +5,21 @@ using UnityEngine.AI;
 using BepInEx;
 using BepInEx.Logging;
 using BepInEx.Configuration;
+using Vectrosity;
+using HarmonyLib;
+using BlackIceFramework.Hooks;
 
 namespace BlackIceFramework
 {
-    [BepInPlugin("org.kuteket.plugins.blackiceframework", "Black Ice Framework", "1.0.0.0")]
+    [BepInPlugin("org.kuteket.plugins.blackiceframework", "Black Ice Framework", frameworkVersion)]
     public class BlackIceFramework : BaseUnityPlugin
     {
         /// --==========================================================================================--
         /// TODO: Test GUI handling. (use EndGameGUI as an example)
         /// --==========================================================================================--
+
+        // The current framework version.
+        public const string frameworkVersion = "0.1";
 
         // Our class tracker.
         private ClassTracker classTracker;
@@ -23,7 +29,9 @@ namespace BlackIceFramework
 
         // Our config entries.
         private static ConfigEntry<bool> _enabled;
+        private static ConfigEntry<KeyboardShortcut> _showDebugInfoKey;
         private static ConfigEntry<KeyboardShortcut> _runCustomCode;
+        private static ConfigEntry<bool> _debugShown;
 
         // Called on script startup.
         void Start()
@@ -34,9 +42,22 @@ namespace BlackIceFramework
             // Assign our logger.
             Logger = base.Logger;
 
+            // -------------------------------------------------------
             // Config entries.
+
+            // General entries.
             _enabled = Config.Bind("General", "Enabled", true, "Enable the ability to run our code.");
             _runCustomCode = Config.Bind("General", "ToggleKey", new KeyboardShortcut(KeyCode.U, KeyCode.LeftShift), "A key that runs our code when pressed.");
+
+            // Debug entries.
+            _showDebugInfoKey = Config.Bind("Debug", "ShowDebugInfoKey", new KeyboardShortcut(KeyCode.U, KeyCode.LeftShift), "The key used to toggle debug information.");
+            _debugShown = Config.Bind("Debug", "ShowDebugInfo", false, "Show the debug window.");
+
+            // -------------------------------------------------------
+            // Our patches.
+            // Harmony.CreateAndPatchAll(typeof(Hooks.GameStateMachineHook));
+            Harmony.CreateAndPatchAll(typeof(Hooks.InventoryControlHook));
+            // Harmony.CreateAndPatchAll(typeof(Hooks.EnemyAIHook));
         }
 
         // Called every frame.
@@ -44,20 +65,17 @@ namespace BlackIceFramework
         {
             classTracker.TrackClasses();
 
+            if (_showDebugInfoKey.Value.IsDown())
+            {
+                // Toggle _debugShown.
+                _debugShown.Value = !_debugShown.Value;
+            }
+
             if (_runCustomCode.Value.IsDown())
             {
                 if (classTracker.gameStateMachine_Running)
                 {
-                    Logger.LogMessage("Worked!");
-                    Logger.LogMessage(GameStateMachine.instance.GetInventory().XP.ToString());
 
-                    /*
-                    // TODO: Test this.
-                    if (PhotonNetwork.LocalPlayer.IsMasterClient)
-                    {
-                        PhotonNetwork.SetMasterClient(PhotonNetwork.LocalPlayer);
-                    }
-                    */
                 }
             }
         }
