@@ -1,4 +1,6 @@
 .vs
+other/
+docs/TEMPLATE.md
 BlackIceFramework/bin/
 BlackIceFramework/obj/
 BlackIceFramework/libs/
