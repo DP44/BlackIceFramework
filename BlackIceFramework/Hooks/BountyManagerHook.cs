@@ -92,152 +92,91 @@ namespace BlackIceFramework.Hooks
             // Get an instance of the hook class.
             BountyManagerHook classHook = new BountyManagerHook();
 
-            // This was here when it was decompiled, we can remove this.
-            // DateTime today = DateTime.Today;
-
-            // Get the player's inventory.
             InventoryControl inventory = GameStateMachine.instance.GetInventory();
+            int playerLevel = inventory.Level;
+            int highestHackedLevel = inventory.GetHighestServerHacked();
 
-            // Get the player's level.
-            int level = inventory.Level;
+            // Bounty level here is the reward level.
+            int bountyLevel = highestHackedLevel + 3;
 
-            // Count the offset (highestServerHacked + 3).
-            int offset = inventory.GetHighestServerHacked() + 3;
-
-            // Check if our level is below 50.
-            if (level < 50)
+            if (playerLevel < InventoryControl.LEVEL_SOFT_CAP)
             {
-                offset = Mathf.Min(level + 10, offset);
+                // so they can still use any items they get from this.
+                bountyLevel = Mathf.Min(playerLevel + 10, bountyLevel);
             }
 
-            offset = Mathf.Max(1, offset);
+            // We don't want negative level bounties.
+            bountyLevel = Mathf.Max(1, bountyLevel);
 
-            /*
-            // TODO: Finish this.
-            foreach (Bounty activeBounty in BountyManager.instance.Bounties)
+            // Create 3 new bounties.
+            for (int i = 0; i < 3; i++)
             {
-                if (activeBounty != null)
-                {
-                    bool track = activeBounty.Track;
+                bool track = true;
 
-                    if (activeBounty.CurrentState != Bounty.State.Complete)
+                // Don't replace a bounty that's still valid.
+                if (BountyManager.instance.Bounties[i] != null)
+                {
+                    // Keep track of this so we can reuse it later.
+                    track = BountyManager.instance.Bounties[i].Track;
+
+                    if (BountyManager.instance.Bounties[i].CurrentState == Bounty.State.Complete)
                     {
-                        if (activeBounty.CurrentState == Bounty.State.Redeemed)
-                        {
-                            // Move to the next active bounty in the array.
-                            continue;
-                        }
-
-                        if (!(activeBounty.ExpireTime > DateTime.Now) && !(activeBounty.ExpireTime == DateTime.MinValue))
-                        {
-                            continue;
-                        }
+                        continue;
                     }
-                }
-                else
-                {
-                    // Bounties become available when we reach level 5.
-                    if (level >= 5)
+
+                    if (BountyManager.instance.Bounties[i].CurrentState != Bounty.State.Redeemed && (BountyManager.instance.Bounties[i].ExpireTime > DateTime.Now || BountyManager.instance.Bounties[i].ExpireTime == DateTime.MinValue))
                     {
                         continue;
                     }
                 }
-            }
-            */
-
-            // NOTE: Right now it's just a rewrite of the decompiled output.
-
-            // Our iterator.
-            int i = 0;
-            
-            // While loop.
-            while (i < 3)
-            {
-                if (BountyManager.instance.Bounties[i] != null)
+                else if (playerLevel < 5)
                 {
-                    bool track = BountyManager.instance.Bounties[i].Track;
-
-                    if (BountyManager.instance.Bounties[i].CurrentState != Bounty.State.Complete)
-                    {
-                        if (BountyManager.instance.Bounties[i].CurrentState == Bounty.State.Redeemed)
-                        {
-                            goto GET_NEW_BOUNTY;
-                        }
-
-                        if (!(BountyManager.instance.Bounties[i].ExpireTime > DateTime.Now))
-                        {
-                            if (!(BountyManager.instance.Bounties[i].ExpireTime == DateTime.MinValue))
-                            {
-                                goto GET_NEW_BOUNTY;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // Bounties become available when we reach level 5.
-                    if (level >= 5)
-                    {
-                        goto GET_NEW_BOUNTY;
-                    }
-
+                    // No bounties before level MINLEVEL, unless they had some from before.
                     switch (i)
                     {
                         case 0:
-                            BountyManager.instance.Bounties[i] = new LevelUpBounty(new Pulse(RarityType.Rare, 5, Brand.None));
+                            BountyManager.instance.Bounties[i] = new LevelUpBounty(new Pulse(RarityType.Rare, 5));
                             BountyManager.instance.Bounties[i].Track = false;
                             break;
-
                         case 1:
-                            BountyManager.instance.Bounties[i] = new LevelUpBounty(new Heal("Heal", RarityType.Rare, 5, Brand.None));
+                            BountyManager.instance.Bounties[i] = new LevelUpBounty(new Heal("Heal", RarityType.Rare, 5));
                             BountyManager.instance.Bounties[i].Track = false;
                             break;
-
                         case 2:
-                            BountyManager.instance.Bounties[i] = new LevelUpBounty(new Mine("Mine", RarityType.Rare, 5, Brand.None));
+                            BountyManager.instance.Bounties[i] = new LevelUpBounty(new Mine("Mine", RarityType.Rare, 5));
                             BountyManager.instance.Bounties[i].Track = false;
                             break;
                     }
+
+                    continue;
                 }
 
-            ITERATE:
-                i++;
-
-            GET_NEW_BOUNTY:
-                // Remove the bounty if it still exists.
-                if (BountyManager.instance.Bounties[i] != null)
+                // At this point, we're creating new bounties.
+                if (BountyManager.instance.Bounties[i] != null) 
                 {
-                    BountyManager.instance.Bounties[i].Remove();
+                    // Just to be sure.
+                    BountyManager.instance.Bounties[i].Remove(); 
                 }
 
+                // Forcing this null so it shouldn't be in memory anymore.
                 BountyManager.instance.Bounties[i] = null;
 
-                // Create a new CustomRandom object.
-                CustomRandom random = new CustomRandom(DateTime.Now.Ticks + (long)i);
+                CustomRandom bountyRandom = new CustomRandom(DateTime.Now.Ticks + i);
 
-                // Call our custom SelectBountyType method.
-                string name = classHook.SelectBountyType(random, offset);
+                // Determine which bounty based on the level and the RNG.
+                String choice = classHook.SelectBountyType(bountyRandom, bountyLevel);
+                Type t = Type.GetType(classHook.GetFullBountyClassName(choice));
 
-                // Get the bounty datatype.
-                Type bountyType = Type.GetType(classHook.GetFullBountyClassName(name));
+                // Create an object of type t.
+                BountyManager.instance.Bounties[i] = (Bounty)Activator.CreateInstance(t, bountyRandom, bountyLevel, i);
 
-                if (bountyType == null)
-                {
-                    Debug.LogError("[BountyManagerHook] CreateNewBounties(): bountyType was null! running original function.");
-                    
-                    // Run the original function.
-                    return true;
-                }
-
-                // Add the randomly selected bounty to the list of active bounties.
-                BountyManager.instance.Bounties[i] = (Bounty)Activator.CreateInstance(bountyType, new object[] { random, offset, i });
+                // Maybe add fun names later?
                 BountyManager.instance.Bounties[i].Title = "Bounty #" + (i + 1).ToString();
-                BountyManager.instance.Bounties[i].Track = true;
 
-                goto ITERATE;
+                BountyManager.instance.Bounties[i].Track = true;
             }
 
-            // We don't want to run the original code.
+            // We don't want to call the original function.
             return false;
         }
     }
