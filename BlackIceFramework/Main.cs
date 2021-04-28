@@ -60,8 +60,8 @@ namespace BlackIceFramework
             // Harmony.CreateAndPatchAll(typeof(Hooks.InventoryControlHook));
             // Harmony.CreateAndPatchAll(typeof(Hooks.EnemyAIHook));
 
-            // Logger.LogMessage("Hooking BountyManager.");
-            // Harmony.CreateAndPatchAll(typeof(Hooks.BountyManagerHook));
+            Harmony.CreateAndPatchAll(typeof(Hooks.BountyManagerHook));
+            Logger.LogMessage("Successfully hooked onto BountyManager.");
         }
 
         // Called every frame.
