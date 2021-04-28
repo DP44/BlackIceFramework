@@ -37,6 +37,9 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>libs\Assembly-CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>libs\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
     <Reference Include="BepInEx">
       <HintPath>libs\BepInEx.dll</HintPath>
     </Reference>
@@ -74,6 +77,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bounties\TestBounty.cs" />
+    <Compile Include="Hooks\BountyManagerHook.cs" />
     <Compile Include="Hooks\EnemyAIHook.cs" />
     <Compile Include="Hooks\GameStateMachineHook.cs" />
     <Compile Include="Hooks\GizmosHook.cs" />

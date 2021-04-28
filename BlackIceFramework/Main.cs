@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AI;
@@ -8,6 +9,7 @@ using BepInEx.Configuration;
 using Vectrosity;
 using HarmonyLib;
 using BlackIceFramework.Hooks;
+using Assets.Scripts.Systems.Bounty;
 
 namespace BlackIceFramework
 {
@@ -30,7 +32,7 @@ namespace BlackIceFramework
         // Our config entries.
         private static ConfigEntry<bool> _enabled;
         private static ConfigEntry<KeyboardShortcut> _showDebugInfoKey;
-        private static ConfigEntry<KeyboardShortcut> _runCustomCode;
+        // private static ConfigEntry<KeyboardShortcut> _runCustomCode;
         private static ConfigEntry<bool> _debugShown;
 
         // Called on script startup.
@@ -47,7 +49,7 @@ namespace BlackIceFramework
 
             // General entries.
             _enabled = Config.Bind("General", "Enabled", true, "Enable the ability to run our code.");
-            _runCustomCode = Config.Bind("General", "ToggleKey", new KeyboardShortcut(KeyCode.U, KeyCode.LeftShift), "A key that runs our code when pressed.");
+            // _runCustomCode = Config.Bind("General", "ToggleKey", new KeyboardShortcut(KeyCode.U, KeyCode.LeftShift), "A key that runs our code when pressed.");
 
             // Debug entries.
             _showDebugInfoKey = Config.Bind("Debug", "ShowDebugInfoKey", new KeyboardShortcut(KeyCode.U, KeyCode.LeftShift), "The key used to toggle debug information.");
@@ -56,8 +58,11 @@ namespace BlackIceFramework
             // -------------------------------------------------------
             // Our patches.
             // Harmony.CreateAndPatchAll(typeof(Hooks.GameStateMachineHook));
-            Harmony.CreateAndPatchAll(typeof(Hooks.InventoryControlHook));
+            // Harmony.CreateAndPatchAll(typeof(Hooks.InventoryControlHook));
             // Harmony.CreateAndPatchAll(typeof(Hooks.EnemyAIHook));
+
+            // Logger.LogMessage("Hooking BountyManager.");
+            // Harmony.CreateAndPatchAll(typeof(Hooks.BountyManagerHook));
         }
 
         // Called every frame.
@@ -69,14 +74,13 @@ namespace BlackIceFramework
             {
                 // Toggle _debugShown.
                 _debugShown.Value = !_debugShown.Value;
+
+                Logger.LogMessage("_debugShown toggled.");
             }
 
-            if (_runCustomCode.Value.IsDown())
+            if (classTracker.gameStateMachine_Running)
             {
-                if (classTracker.gameStateMachine_Running)
-                {
-
-                }
+                // Update code here.
             }
         }
     }
