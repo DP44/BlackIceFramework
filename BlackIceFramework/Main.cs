@@ -6,7 +6,6 @@ using UnityEngine.AI;
 using BepInEx;
 using BepInEx.Logging;
 using BepInEx.Configuration;
-using Vectrosity;
 using HarmonyLib;
 using BlackIceFramework.Hooks;
 using Assets.Scripts.Systems.Bounty;
